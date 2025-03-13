@@ -1,25 +1,44 @@
 from logging.config import fileConfig
-from models import Base
-
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
+from dotenv import load_dotenv
 from alembic import context
+from alembic.config import Config
+import os
+
+load_dotenv()  # Charge les variables depuis le fichier .env
+
+HOST = os.getenv("HOST")
+USER = os.getenv("USER")
+DATABASE = os.getenv("DATABASE")
+PASSWORD = os.getenv("PASSWORD")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# here we allow ourselves to pass interpolation vars to alembic.ini
+# fron the host env
+
+section = config.config_ini_section
+config.set_section_option(section, "USER", os.environ.get("USER"))
+config.set_section_option(section, "PASSWORD", os.environ.get("PASSWORD"))
+config.set_section_option(section, "HOST", os.environ.get("HOST"))
+config.set_section_option(section, "DATABASE", os.environ.get("DATABASE"))
+
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+config.set_main_option("sqlalchemy.url", os.getenv('POSTGRES_URL'))
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata
+target_metadata = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
