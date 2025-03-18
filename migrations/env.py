@@ -1,3 +1,7 @@
+import sys, os
+# Ajout du repertoire parent app à sys.path avant l'importation
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -5,6 +9,8 @@ from dotenv import load_dotenv
 from alembic import context
 from alembic.config import Config
 import os
+from app.db.connect_to_db import Base
+from app.db.models import t_invoice, t_customer, t_product, t_invoice_item
 
 load_dotenv()  # Charge les variables depuis le fichier .env
 
@@ -20,25 +26,21 @@ config = context.config
 # here we allow ourselves to pass interpolation vars to alembic.ini
 # fron the host env
 
-section = config.config_ini_section
-config.set_section_option(section, "USER", os.environ.get("USER"))
-config.set_section_option(section, "PASSWORD", os.environ.get("PASSWORD"))
-config.set_section_option(section, "HOST", os.environ.get("HOST"))
-config.set_section_option(section, "DATABASE", os.environ.get("DATABASE"))
+config.set_main_option("sqlalchemy.url", os.getenv('POSTGRES_URL').replace('%', '%%'))
 
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-if config.config_file_name is not None:
+if config.config_file_name is not None: 
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", os.getenv('POSTGRES_URL'))
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
+include_schemas = True  # Activer la gestion des schémas
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -82,10 +84,19 @@ def run_migrations_online() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
+    # Fonction pour filtrer les objets à inclure dans les migrations
+    def include_object(object, name, type_, reflected, compare_to):
+        if type_ == "table" and object.schema != 'patricia':
+            return False
+        return True
+    
+    # Configurer Alembic avec le filtre pour inclure uniquement certaines tables
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            version_table_schema='patricia', # IMPORTANT !
+            include_schemas=True, # Important
+            include_object=include_object,  # Appliquer le filtre
         )
 
         with context.begin_transaction():

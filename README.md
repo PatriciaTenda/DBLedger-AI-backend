@@ -52,3 +52,4 @@ Génère le `requirements.txt` (clean, avec librairies & version) à partir du `
 ├── script.py.mako  # Template par défaut pour les migrations
 └── alembic.ini     # Fichier de configuration de base d'Alembic à la racine 
 ```
+

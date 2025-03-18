@@ -52,12 +52,12 @@ for annee in range(2018, 2025):
 
         # update BDD
         querries.add_invoices({
-                "id_invoices": image.replace("-","/")[:13],
-                "name_invoices": image,
+                "id_invoice": image.replace("-","/")[:13],
+                "name_invoice": image,
                 "created_at": child.find("Properties/Creation-Time").text,
                 "modified_at": child.find("Properties/Last-Modified").text,
                 "content_length": int(child.find("Properties/Content-Length").text),
-                "content_MD5" : child.find("Properties/Content-MD5").text
+                "content_md5" : child.find("Properties/Content-MD5").text
         })
 
         file_name_invoice = f"data_images/{image}"

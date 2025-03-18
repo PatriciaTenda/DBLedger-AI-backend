@@ -1,6 +1,8 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import declarative_base, sessionmaker
 from dotenv import load_dotenv
 import os
+from contextlib import contextmanager
 
 
 # Chargement des variables d'environnement 
@@ -15,7 +17,14 @@ if  not POSTGRES_URL:
     exit(1)
 
 # Création du moteur SQLAlchimy
-engine = create_engine(POSTGRES_URL)
+engine = create_engine(POSTGRES_URL, echo=True,
+                       connect_args={"connect_timeout": 30, 'options': '-csearch_path=patricia'},
+                      )
+# Créer un générateur de session
+Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Configuration de la Base
+Base = declarative_base(metadata=MetaData(schema="patricia"))
 
 def db_connexion():
     try:
@@ -25,6 +34,19 @@ def db_connexion():
     except Exception as e:
         print(f"Erreur de connexion {e}")
         return None
-    
+
+@contextmanager    
+def get_session():
+    # Créer une session locale pour des opérations sur la base et s'assure que la session est bien fermée
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
 
 
