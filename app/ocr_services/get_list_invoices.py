@@ -28,7 +28,7 @@ def is_data_in_database(image_id):
 # Fetching the list of invoices
 for annee in range(2018, 2025):
     url =f"{CONTAINER_URL.strip()}/invoices-{annee}?restype=container&comp=list&{CONTAINER_SAS.strip()}" 
-    xml_file = f"Data/list_invoice_{annee}.xml"
+    xml_file = f"data_images/Data/list_invoice_{annee}.xml"
     reponse = requests.get(url)
     #print(url)
     #print(reponse.status_code)

@@ -4,8 +4,6 @@ DBLedger-AI est une application web qui optimise le prétraitement des factures 
 Generic single-database configuration.
 
 ## Installation
-## OCR_2025
-Sample project OCR
 
 ## API Factures
 
@@ -34,7 +32,12 @@ Génère le `requirements.txt` (clean, avec librairies & version) à partir du `
  pip install pip-tools
  pip-compile
 ```
+## Configuration base de données
+### Instalation SQLAlchimy
 
+```bash 
+    pip install SQLAlchymi
+```
 ### Installation alembic
 
 ```bash
@@ -53,3 +56,21 @@ Génère le `requirements.txt` (clean, avec librairies & version) à partir du `
 └── alembic.ini     # Fichier de configuration de base d'Alembic à la racine 
 ```
 
+## Installation OCR et openCV
+
+```bash
+    pip install pytesseract
+    pip install opencv-python
+```
+
+## Installation de pyzbar pour décoder le QRcode 
+
+```bash
+    pip install pyzbar
+
+```
+
+### Pour resoudre le l'erreur  libzbar-64.dll not found
+ Il faut téléchargé le fichier vc_redist.x64.exe
+ le lien officiel de Microsoft :
+🔗 https://learn.microsoft.com/fr-fr/cpp/windows/latest-supported-vc-redist

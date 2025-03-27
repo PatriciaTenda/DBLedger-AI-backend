@@ -1,0 +1,37 @@
+{
+    "invoice_number": "FAC/2018/0001",
+    "issue_date": "2018-10-13",
+    "total": "1146.84",
+    "currency": "EURO",
+    "name": "Carol Potter",
+    "email": "ashley38@example.org",
+    "address": "405 Adrian Crest Suite 095, Jamesstad, MN 36094",
+    "gender": "F",
+    "birthdate": "2000-02-16",
+    "products": [
+        {
+            "product": "Edge so crime share",
+            "quantity": 4,
+            "price": "12.18",
+            "currency": "EUR"
+        },
+        {
+            "product": "Thank do article especially",
+            "quantity": 1,
+            "price": "67.86",
+            "currency": "EUR"
+        },
+        {
+            "product": "Include dinner main friend",
+            "quantity": 3,
+            "price": "287.99",
+            "currency": "EUR"
+        },
+        {
+            "product": "Capital hear morning people",
+            "quantity": 3,
+            "price": "55.43",
+            "currency": "EUR"
+        }
+    ]
+}
