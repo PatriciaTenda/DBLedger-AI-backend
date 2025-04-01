@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>📊 Rapport des produits</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+</head>
+<body>
+    <h1>📦 Rapport des produits vendus</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom du produit</th>
+                <th>Quantité totale vendue</th>
+                <th>Revenu total (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td>{{ p.name_product }}</td>
+                <td>{{ p.total_quantity }}</td>
+                <td>{{ "%.2f"|format(p.total_revenue) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
