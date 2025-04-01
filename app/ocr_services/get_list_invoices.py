@@ -49,7 +49,7 @@ for annee in range(2018, 2025):
         image = child.find("Name").text
         print(image)
 
-
+        
         # update BDD
         querries.add_invoices({
                 "id_invoice": image.replace("-","/")[:13],
@@ -59,7 +59,7 @@ for annee in range(2018, 2025):
                 "content_length": int(child.find("Properties/Content-Length").text),
                 "content_md5" : child.find("Properties/Content-MD5").text
         })
-
+        
         file_name_invoice = f"data_images/{image}"
         url_image = f"{CONTAINER_URL.strip()}/invoices-{annee}/{image}?{CONTAINER_SAS.strip()}"
         if  not os.path.exists(file_name_invoice): 

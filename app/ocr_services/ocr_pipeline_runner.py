@@ -40,6 +40,7 @@ def run_ocr_pipeline(image_path: str):
     all_data = extract_all_invoice_data(text)
 
     print("\n Données prêtes pour la base :")
+    print(json.dumps(all_data, indent=4, ensure_ascii=False))
     return all_data
 
 def export_to_json(data: dict, file_path: str = "extracted_invoice.json"):
@@ -47,8 +48,7 @@ def export_to_json(data: dict, file_path: str = "extracted_invoice.json"):
         json.dump(data, f, indent=4, ensure_ascii=False)
     print(f"Données exportées dans {file_path}")
 
-
-# Exemple d'exécution
+#Exemple d'exécution
 if __name__ == "__main__":
     print("\nDonnées extraites pour la base :")
     result = run_ocr_pipeline("data_images/images_for_test/FAC_2018_0001-654.png")

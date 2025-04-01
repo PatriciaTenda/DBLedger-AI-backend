@@ -74,3 +74,10 @@ Génère le `requirements.txt` (clean, avec librairies & version) à partir du `
  Il faut téléchargé le fichier vc_redist.x64.exe
  le lien officiel de Microsoft :
 🔗 https://learn.microsoft.com/fr-fr/cpp/windows/latest-supported-vc-redist
+
+
+
+### Installation de la librairie python-multipart
+```bash
+    pip install python-multipart
+```
