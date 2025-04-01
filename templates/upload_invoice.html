@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <title>OCR</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+  >
+  <style>
+    /* Style optionnel du dropZone */
+    #dropZone {
+      border: 2px dashed #ccc;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #dropZone:hover {
+      background-color: #e2e6ea;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <img src="/static/images/Logo_dbledger_ai.png" alt="Profile Icon" class="rounded-circle" width="60">
+        <span class="ms-2 fs-4">OCR application</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <!-- Navbar gauche -->
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="btn btn-outline-light me-2" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-outline-light me-2" href="#">Invoices</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="btn btn-outline-light dropdown-toggle me-2" href="#" data-bs-toggle="dropdown">
+              Dashboards
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Customers segmentation</a></li>
+              <li><a class="dropdown-item" href="#">Products segmentation</a></li>
+              <li><a class="dropdown-item" href="#">Monitoring</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#">OCR</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <!-- Navbar droite -->
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a href="/logout" class="btn btn-outline-light me-2">Logout</a>
+          </li>
+          <form class="d-flex" role="search">
+            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenu principal -->
+  <div class="container my-5 pt-5">
+    <div class="row justify-content-center">
+      <div class="container mt-5 pt-5 col-md-8">
+
+        <h1 class="text-center mb-4">Uploader your file</h1>
+        
+<!-- Formulaire de soumission -->
+<!-- Il envoie le fichier vers la route POST /upload -->
+<!-- Le fichier sera traité par l'API OCR et les données extraites seront affichées dans le div ocrResult -->
+<!-- Le bouton d'exportation sera également affiché après le traitement du fichier -->
+<!-- Le bouton d'exportation permettra de télécharger les données extraites au format JSON -->
+<form method="post" action="/fetch-invoice-data" enctype="multipart/form-data">
+  <div id="dropZone" class="text-center p-5 border border-secondary" onclick="document.getElementById('fileInput').click()">
+    <input type="file" name="file" id="fileInput" class="form-control d-none" required>
+    <div class="d-flex flex-column align-items-center justify-content-center">
+      <i class="bi bi-upload fs-1 mb-2 text-primary"></i>
+      <div class="text-secondary">Glissez un fichier ou cliquez ici</div>
+    </div>
+  </div>
+  <div class="text-center mt-4">
+    <button type="submit" class="btn btn-primary">Envoyer</button>
+  </div>
+</form>
+
+
+<!-- Résultat OCR affiché -->
+<div id="ocrResult" class="mt-5" style="display: none;">
+  <h4 class="text-center mb-4">Data extracted from the invoice</h4>
+
+  <div class="row g-3" id="ocrFields">
+    <!-- Champs remplis dynamiquement -->
+  </div>
+
+  <div class="text-center mt-4">
+    <button id="exportButton" class="btn btn-success">Export as JSON</button>
+  </div>
+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts Bootstrap + ton script drag & drop -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+  
+    dropZone.addEventListener('click', () => fileInput.click());
+  
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('border-primary');
+    });
+  
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-primary');
+    });
+  
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('border-primary');
+      if (e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+      }
+    });
+  </script>  
+  
+</body>
+</html>
