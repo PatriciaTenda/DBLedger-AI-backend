@@ -36,6 +36,7 @@
     </style>
 </head>
 <body>
+    <!-- Navbar start -->
     <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="/">
@@ -45,7 +46,9 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Left nav -->
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="btn btn-outline-light me-2" href="/upload_invoice">Upload Invoice</a>
@@ -58,31 +61,28 @@
                             Dashboards
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Customer Segmentation</a></li>
+                            <li><a class="dropdown-item" href="/customer-segmentation">Customer Segmentation</a></li>
                             <li><a class="dropdown-item" href="#">Product Segmentation</a></li>
-                            <li><a class="dropdown-item" href="/product-report">Global Product Report</a></li>
-                            <li><a class="dropdown-item" href="/customer-report">Global Customer Report</a></li>
+                            <li><a class="dropdown-item" href="/product-report">Global Product Reporting</a></li>
+                            <li><a class="dropdown-item" href="/customer-report">Global Customer Reporting</a></li>
                             <li><a class="dropdown-item" href="#">Monitoring</a></li>
                         </ul>
                     </li>
                 </ul>
+
+                <!-- Right nav -->
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if request.session.user %}
-                        <li class="nav-item text-white me-3">
-                            👋 Welcome, {{ request.session.user }}
-                        </li>
-                        <li class="nav-item">
-                            <a href="/logout" class="btn btn-outline-light me-2">Logout</a>
-                        </li>
+                        <li class="nav-item text-white me-3">👋 Welcome, {{ request.session.user }}</li>
+                        <li class="nav-item"><a href="/logout" class="btn btn-outline-light me-2">Logout</a></li>
                     {% else %}
-                        <li class="nav-item">
-                            <a href="/login" class="btn btn-outline-light me-2">Login</a>
-                        </li>
+                        <li class="nav-item"><a href="/login" class="btn btn-outline-light me-2">Login</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
+    <!-- Navbar end -->
 
     <div class="container">
         <h1 class="mb-4">Global Customer Report</h1>

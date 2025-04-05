@@ -4,12 +4,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 from starlette.middleware.sessions import SessionMiddleware
-from datetime import datetime
+from datetime import datetime , date
 from dotenv import load_dotenv
 from starlette.status import HTTP_503_SERVICE_UNAVAILABLE
 from io import StringIO
 from fastapi.responses import StreamingResponse
-
+from operator import itemgetter
+from collections import Counter
 
 from app.ocr_services.ocr_pipeline_runner import run_ocr_pipeline
 from app.db.models import t_product, t_invoice_item, t_invoice, t_customer, t_user
@@ -301,5 +302,89 @@ def export_customer_report():
 
     except OperationalError:
         raise HTTPException(status_code=503, detail="Erreur base de données.")
+    finally:
+        db.close()
+
+# ----------------------------- CUSTOMER SEGMENTATION -----------------------------
+@app.get("/customer-segmentation", response_class=HTMLResponse, tags=["Segmentation"])
+def customer_segmentation(request: Request):
+    try:
+        db = Session()
+        today = date.today()
+
+        result = db.query(
+            t_customer.id_customer,
+            t_customer.name_customer,
+            t_customer.email_customer,
+            func.max(t_invoice.issue_date).label("last_invoice_date"),
+            func.count(t_invoice.id_invoice).label("frequency"),
+            func.sum(t_invoice.total_amount).label("monetary")
+        ).join(t_invoice, t_invoice.id_customer == t_customer.id_customer)\
+         .group_by(t_customer.id_customer)\
+         .all()
+
+        customers_rfm = []
+        for c in result:
+            recency = (today - c.last_invoice_date.date()).days if c.last_invoice_date else 999
+            frequency = c.frequency
+            monetary = float(c.monetary or 0)
+            customers_rfm.append({
+                "id": c.id_customer,
+                "name": c.name_customer,
+                "email": c.email_customer,
+                "recency": recency,
+                "frequency": frequency,
+                "monetary": monetary
+            })
+
+        # Fonction pour calculer les scores par quantiles
+        def score(values, reverse=False):
+            sorted_vals = sorted(values, reverse=reverse)
+            quantiles = [sorted_vals[int(len(sorted_vals) * q / 5)] for q in range(1, 5)]
+            def get_score(val):
+                if val <= quantiles[0]: return 1
+                elif val <= quantiles[1]: return 2
+                elif val <= quantiles[2]: return 3
+                elif val <= quantiles[3]: return 4
+                else: return 5
+            return get_score
+
+        recency_scores = score([c["recency"] for c in customers_rfm], reverse=False)
+        frequency_scores = score([c["frequency"] for c in customers_rfm], reverse=True)
+        monetary_scores = score([c["monetary"] for c in customers_rfm], reverse=True)
+
+        # 🔥 Nouvelle fonction : segment selon les scores
+        def get_segment(r, f, m):
+            if r >= 4 and f >= 4 and m >= 4:
+                return "Champions"
+            elif r >= 4 and f <= 2:
+                return "New Customer"
+            elif f >= 4:
+                return "Loyal"
+            elif r >= 3 and f >= 2 and m <= 2:
+                return "Potential Loyalist"
+            elif r <= 2 and f >= 3:
+                return "At Risk"
+            elif r == 1 and f == 1 and m == 1:
+                return "Lost"
+            else:
+                return "Regular"
+
+        for c in customers_rfm:
+            c["r_score"] = recency_scores(c["recency"])
+            c["f_score"] = frequency_scores(c["frequency"])
+            c["m_score"] = monetary_scores(c["monetary"])
+            c["rfm_code"] = f"{c['r_score']}{c['f_score']}{c['m_score']}"
+            c["segment"] = get_segment(c["r_score"], c["f_score"], c["m_score"])
+
+        segment_counts = Counter(c["segment"] for c in customers_rfm)
+        segment_data = dict(segment_counts)
+
+        return templates.TemplateResponse("customer_segmentation.html", {
+            "request": request,
+            "customers": customers_rfm,
+            "segment_data": segment_data
+        })
+
     finally:
         db.close()
