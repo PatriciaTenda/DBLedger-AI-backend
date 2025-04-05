@@ -10,7 +10,7 @@ from alembic import context
 from alembic.config import Config
 import os
 from app.db.connect_to_db import Base
-from app.db.models import t_invoice, t_customer, t_product, t_invoice_item
+from app.db.models import t_invoice, t_customer, t_product, t_invoice_item, t_user
 
 load_dotenv()  # Charge les variables depuis le fichier .env
 

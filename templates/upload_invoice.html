@@ -1,16 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr">
-
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>OCR</title>
+  <title>Upload Invoice - DBLedger AI</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-  >
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
-    /* Style optionnel du dropZone */
     #dropZone {
       border: 2px dashed #ccc;
       background-color: #f8f9fa;
@@ -22,116 +17,120 @@
     }
   </style>
 </head>
-
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg bg-dark" data-bs-theme="dark">
-    <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-center" href="#">
-        <img src="/static/images/Logo_dbledger_ai.png" alt="Profile Icon" class="rounded-circle" width="60">
-        <span class="ms-2 fs-4">OCR application</span>
-      </a>
 
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="/static/images/Logo_dbledger_ai.png" alt="DBLedger Logo" class="rounded-circle me-2" width="60">
+        <span class="fs-4">DBLedger-AI</span>
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <!-- Navbar gauche -->
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="btn btn-outline-light me-2" href="#">Home</a>
+            <a class="btn btn-outline-light me-2" href="/upload_invoice">Upload invoice</a>
           </li>
           <li class="nav-item">
-            <a class="btn btn-outline-light me-2" href="#">Invoices</a>
+            <a class="btn btn-outline-light me-2" href="/invoice">Invoice Viewer</a>
           </li>
           <li class="nav-item dropdown">
-            <a class="btn btn-outline-light dropdown-toggle me-2" href="#" data-bs-toggle="dropdown">
+            <a class="btn btn-outline-light dropdown-toggle me-2" href="#" role="button" data-bs-toggle="dropdown">
               Dashboards
             </a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="#">Customers segmentation</a></li>
               <li><a class="dropdown-item" href="#">Products segmentation</a></li>
+              <li><a class="dropdown-item" href="/product-report">Global reporting about Products</a></li>
+              <li><a class="dropdown-item" href="/customer-report">Global reporting about Customers</a></li>
               <li><a class="dropdown-item" href="#">Monitoring</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#">OCR</a></li>
             </ul>
           </li>
         </ul>
-
-        <!-- Navbar droite -->
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a href="/logout" class="btn btn-outline-light me-2">Logout</a>
-          </li>
-          <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
+        <ul class="navbar-nav ms-auto align-items-center">
+          {% if request.session.user %}
+            <li class="nav-item text-white me-3">
+              👋 Welcome, {{ request.session.user }}
+            </li>
+            <li class="nav-item">
+              <a href="/logout" class="btn btn-outline-light me-2">Logout</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a href="/login" class="btn btn-outline-light me-2">Login</a>
+            </li>
+          {% endif %}
         </ul>
       </div>
     </div>
-  </nav>
+</nav>
+  <!-- End Navbar -->
 
-  <!-- Contenu principal -->
   <div class="container my-5 pt-5">
-    <div class="row justify-content-center">
-      <div class="container mt-5 pt-5 col-md-8">
+    <h1 class="text-center mb-4">Upload your invoice</h1>
 
-        <h1 class="text-center mb-4">Uploader your file</h1>
-        
-<!-- Formulaire de soumission -->
-<!-- Il envoie le fichier vers la route POST /upload -->
-<!-- Le fichier sera traité par l'API OCR et les données extraites seront affichées dans le div ocrResult -->
-<!-- Le bouton d'exportation sera également affiché après le traitement du fichier -->
-<!-- Le bouton d'exportation permettra de télécharger les données extraites au format JSON -->
-<form method="post" action="/fetch-invoice-data" enctype="multipart/form-data">
-  <div id="dropZone" class="text-center p-5 border border-secondary" onclick="document.getElementById('fileInput').click()">
-    <input type="file" name="file" id="fileInput" class="form-control d-none" required>
-    <div class="d-flex flex-column align-items-center justify-content-center">
-      <i class="bi bi-upload fs-1 mb-2 text-primary"></i>
-      <div class="text-secondary">Glissez un fichier ou cliquez ici</div>
-    </div>
-  </div>
-  <div class="text-center mt-4">
-    <button type="submit" class="btn btn-primary">Envoyer</button>
-  </div>
-</form>
+    <!-- Messages -->
+    <div id="successMsg" class="alert alert-success d-none text-center">✅ File uploaded successfully!</div>
+    <div id="errorMsg" class="alert alert-danger d-none text-center">❌ Error while uploading file.</div>
 
+    <!-- Upload Form -->
+    <form method="post" action="/fetch-invoice-data" enctype="multipart/form-data" onsubmit="showSpinner()" id="uploadForm">
+      <div id="dropZone" class="text-center p-5 border border-secondary">
+        <input type="file" name="file" id="fileInput" class="form-control d-none" required>
+        <div class="d-flex flex-column align-items-center justify-content-center">
+          <i class="bi bi-upload fs-1 mb-2 text-primary"></i>
+          <div class="text-secondary">Drag and drop a file or click here</div>
+        </div>
+      </div>
 
-<!-- Résultat OCR affiché -->
-<div id="ocrResult" class="mt-5" style="display: none;">
-  <h4 class="text-center mb-4">Data extracted from the invoice</h4>
+      <div class="text-center mt-3">
+        <button type="submit" class="btn btn-primary">⚙️ Launch OCR Engine</button>
+        <button type="button" class="btn btn-outline-danger ms-2" onclick="resetUpload()">Reset</button>
+      </div>
 
-  <div class="row g-3" id="ocrFields">
-    <!-- Champs remplis dynamiquement -->
-  </div>
+      <!-- Spinner -->
+      <div id="loadingSpinner" class="text-center mt-3" style="display: none;">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Uploading...</span></div>
+        <p class="mt-2 text-primary">Processing file...</p>
+      </div>
+    </form>
 
-  <div class="text-center mt-4">
-    <button id="exportButton" class="btn btn-success">Export as JSON</button>
-  </div>
-</div>
+    <!-- OCR Result -->
+    <div id="ocrResult" class="mt-5" style="display: none;">
+      <h4 class="text-center mb-4">Data extracted from the invoice</h4>
+      <div class="row g-3" id="ocrFields"></div>
+      <div class="text-center mt-4">
+        <button id="exportButton" class="btn btn-success">Export as JSON</button>
       </div>
     </div>
   </div>
 
-  <!-- Scripts Bootstrap + ton script drag & drop -->
+  <!-- Toast for Reset -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="uploadResetToast" class="toast text-bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">📂 File selection has been reset.</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-  
+
     dropZone.addEventListener('click', () => fileInput.click());
-  
     dropZone.addEventListener('dragover', e => {
       e.preventDefault();
       dropZone.classList.add('border-primary');
     });
-  
     dropZone.addEventListener('dragleave', () => {
       dropZone.classList.remove('border-primary');
     });
-  
     dropZone.addEventListener('drop', e => {
       e.preventDefault();
       dropZone.classList.remove('border-primary');
@@ -139,7 +138,17 @@
         fileInput.files = e.dataTransfer.files;
       }
     });
-  </script>  
-  
+
+    function showSpinner() {
+      document.getElementById("loadingSpinner").style.display = "block";
+    }
+
+    function resetUpload() {
+      fileInput.value = "";
+      document.getElementById("ocrResult").style.display = "none";
+      const toast = new bootstrap.Toast(document.getElementById("uploadResetToast"));
+      toast.show();
+    }
+  </script>
 </body>
 </html>

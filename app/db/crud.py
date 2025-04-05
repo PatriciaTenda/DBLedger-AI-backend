@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from app.db.models import t_customer, t_invoice, t_product, t_invoice_item
 from sqlalchemy.orm import Session
 from datetime import datetime
+from sqlalchemy import func, desc
 from sqlalchemy.exc import IntegrityError
 import logging
 
@@ -99,3 +100,5 @@ def create_invoice_item(db: Session, invoice_id: str, product_id: int, quantity:
         db.rollback()
         logger.warning(f"[LIGNE] Doublon ou erreur d'insertion : {invoice_id} | produit {product_id}")
         return None
+
+

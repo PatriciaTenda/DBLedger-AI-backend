@@ -74,3 +74,16 @@ class t_invoice_item(Base):
 
     def __repr__(self):
         return f"INVOICE ITEM n°{self.id_item} (Subtotal: {self.subtotals}, Quantity: {self.quantities})"
+
+
+#this is the model for the user table
+# it is used for authentication and authorization purposes
+from sqlalchemy import Column, Integer, String
+from app.db.connect_to_db import Base
+
+class t_user(Base):
+    __tablename__ = "t_user"
+
+    id_user = Column(Integer, primary_key=True, index=True)
+    email_user = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)

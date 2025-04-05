@@ -77,7 +77,72 @@ Génère le `requirements.txt` (clean, avec librairies & version) à partir du `
 
 
 
-### Installation de la librairie python-multipart
+## Installation de la librairie python-multipart
 ```bash
     pip install python-multipart
+```
+
+
+## Mise en place du système d'authentification des utilisateurs
+
+### Authentification & Sécurité
+Le système d'authentification de DBLedger-AI repose sur un mécanisme simple et sécurisé utilisant :
+
+🔑 Formulaire de connexion (email + mot de passe)
+
+🔒 Hachage des mots de passe avec bcrypt
+
+🔁 Vérification du mot de passe lors de la connexion
+
+🔄 Redirection en cas d’échec ou de succès
+
+✅ Gestion des erreurs utilisateur avec feedback visuel (Toast Bootstrap)
+
+#### Fonctionnement
+Création d’un utilisateur (à faire via Alembic ou script Python)
+
+Les mots de passe sont hachés avant d’être stockés en base.
+
+Utilisation de la fonction hash_password(password).
+
+##### Connexion
+
+Le formulaire /login envoie les données à la route /auth/jwt/login.
+
+Vérification de l’email et du mot de passe via la fonction verify_password(...).
+
+En cas de succès : redirection vers /upload_invoice.
+
+En cas d’échec : redirection vers /login?error=invalid avec affichage d’un message d'erreur via un toast.
+
+##### Sécurité
+
+Aucune information sensible n’est stockée en clair.
+
+Le système est conçu pour une authentification simple avant extension future vers OAuth2 / JWT.
+
+ Compte test (exemple)
+
+```bash
+    Email : admin@example.com
+    Mot de passe : secret
+```
+Ce compte est utilisé à des fins de démonstration (dans la version de développement).
+
+#### Ajouter un utilitaire de hash de mot de passe
+##### Installation de bcrypt
+bcrypt : un algorithme sécurisé recommandé pour le stockage de mots de passe.
+```bash
+    pip install bcrypt
+```
+
+##### Installation passlib
+passlib : pour le hashage et la vérification des mots de passe.
+```bash
+   pip install passlib[bcrypt]
+```
+#### Installion module itsdangerous
+La session dans Starlette/FastAPI utilise itsdangerous pour signer les données de session.
+```bash
+    pip install itsdangerous
 ```
