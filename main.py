@@ -220,7 +220,9 @@ def export_product_report():
 @app.get("/customer-report", response_class=HTMLResponse, tags=["Reports"])
 def customer_report(request: Request):
     try:
-        db = Session()  # ou Session() si tu n'as pas SessionLocal
+        db = Session()   ## Connexion à la base de données    
+        
+        # Requête pour le rapport client
 
         result = db.query(
             t_customer.id_customer,
@@ -312,6 +314,7 @@ def customer_segmentation(request: Request):
         db = Session()
         today = date.today()
 
+        # Étape 1 : Requête RFM de base
         result = db.query(
             t_customer.id_customer,
             t_customer.name_customer,
@@ -323,11 +326,13 @@ def customer_segmentation(request: Request):
          .group_by(t_customer.id_customer)\
          .all()
 
+        # Étape 2 : Construction liste RFM avec dicts
         customers_rfm = []
         for c in result:
             recency = (today - c.last_invoice_date.date()).days if c.last_invoice_date else 999
             frequency = c.frequency
             monetary = float(c.monetary or 0)
+
             customers_rfm.append({
                 "id": c.id_customer,
                 "name": c.name_customer,
@@ -337,7 +342,7 @@ def customer_segmentation(request: Request):
                 "monetary": monetary
             })
 
-        # Fonction pour calculer les scores par quantiles
+        # Étape 3 : Score par quantiles
         def score(values, reverse=False):
             sorted_vals = sorted(values, reverse=reverse)
             quantiles = [sorted_vals[int(len(sorted_vals) * q / 5)] for q in range(1, 5)]
@@ -353,7 +358,7 @@ def customer_segmentation(request: Request):
         frequency_scores = score([c["frequency"] for c in customers_rfm], reverse=True)
         monetary_scores = score([c["monetary"] for c in customers_rfm], reverse=True)
 
-        # 🔥 Nouvelle fonction : segment selon les scores
+        # Étape 4 : Affecter scores + segment + mettre à jour la base
         def get_segment(r, f, m):
             if r >= 4 and f >= 4 and m >= 4:
                 return "Champions"
@@ -377,6 +382,14 @@ def customer_segmentation(request: Request):
             c["rfm_code"] = f"{c['r_score']}{c['f_score']}{c['m_score']}"
             c["segment"] = get_segment(c["r_score"], c["f_score"], c["m_score"])
 
+            # 🔥 Mise à jour du segment dans la base
+            customer_db = db.query(t_customer).filter(t_customer.id_customer == c["id"]).first()
+            if customer_db:
+                customer_db.segment = c["segment"]
+
+        db.commit()
+
+        # Étape 5 : Statistiques pour les graphiques
         segment_counts = Counter(c["segment"] for c in customers_rfm)
         segment_data = dict(segment_counts)
 
@@ -388,3 +401,30 @@ def customer_segmentation(request: Request):
 
     finally:
         db.close()
+
+
+# Exporter le rapport de segmentation client au format CSV
+@app.get("/export-segmentation-report", tags=["Segmentation"])
+def export_segmentation_report():
+    db = Session()
+
+    # Requête des clients + segments
+    result = db.query(
+        t_customer.name_customer,
+        t_customer.email_customer,
+        t_customer.segment
+    ).all()
+
+    # Nom du fichier dans le répertoire exports/
+    export_path = os.path.join("exports", "segmentation_report.csv")
+
+    # Création du fichier CSV dans le dossier
+    with open(export_path, mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Name", "Email", "Segment"])
+        for r in result:
+            writer.writerow([r.name_customer, r.email_customer, r.segment])
+
+    # Téléchargement du fichier
+    return FileResponse(export_path, media_type="text/csv", filename="segmentation_report.csv")
+

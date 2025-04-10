@@ -8,6 +8,37 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         body {
+        table#segmentation-table {
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        #segmentation-table th {
+            background: linear-gradient(to right, #2193b0, #6dd5ed); /* Nouveau style ici */
+            color: white;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+            border: none;
+        }
+
+        #segmentation-table td {
+            vertical-align: middle;
+            font-size: 15px;
+        }
+
+        #segmentation-table tbody tr:hover {
+            background-color: #f1f1f1;
+            transition: background-color 0.3s ease;
+        }
+
+        #segmentation-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
             font-family: Arial, sans-serif;
             background: #f4f4f4;
         }
@@ -79,8 +110,31 @@
 
     <div class="container">
         <h2 class="mb-4"><i class="bi bi-bar-chart-steps me-2"></i>Customer Segmentation (RFM)</h2>
+        <p class="lead">This dashboard provides an overview of customer segmentation based on RFM analysis.</p>
 
-        <table id="segmentation-table" class="table table-striped table-bordered">
+        <a class="btn btn-primary mb-3" href="/export-segmentation-report" download>
+            ⬇️ Export Segmentation CSV
+        </a>
+      
+        <p class="lead">RFM (Recency, Frequency, Monetary) analysis is a marketing technique used to determine the value of a customer to a business. It helps in identifying the most valuable customers and tailoring marketing strategies accordingly.</p>
+        <hr class="my-4">
+            <i class="bi bi-info-circle-fill me-2"></i>RFM Segmentation Overview
+        <!-- Filter by Segment -->
+        <div class="mb-3">
+            <label for="segmentFilter" class="form-label fw-bold">Filter by Segment:</label>
+            <select id="segmentFilter" class="form-select" style="max-width: 250px;">
+                <option value="All">All segments</option>
+                <option value="Champions">Champions</option>
+                <option value="Loyal">Loyal</option>
+                <option value="New Customer">New Customer</option>
+                <option value="Lost">Lost</option>
+                <option value="Regular">Regular</option>
+            </select>
+        </div>
+        
+
+        <table id="segmentation-table" class="display table table-striped table-bordered">
+              
             <thead class="table-dark text-center">
                 <tr>
                     <th>Name</th>
@@ -109,38 +163,31 @@
                     <td><span class="badge bg-secondary">{{ c.rfm_code }}</span></td>
                     <td>
                         {% if c.segment == 'Champions' %}
-                            <span class="badge" style="background: linear-gradient(to right, #00ff87, #0acffe); color: #000; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                👑 {{ c.segment }}
-                            </span>
-                        {% elif c.segment == 'Loyal' %}
-                            <span class="badge" style="background: linear-gradient(to right, #3a7bd5, #00d2ff); color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                💙 {{ c.segment }}
-                            </span>
-                        {% elif c.segment == 'New Customer' %}
-                            <span class="badge" style="background: linear-gradient(to right, #ffb347, #ffcc33); color: #000; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                ✨ {{ c.segment }}
-                            </span>
-                        {% elif c.segment == 'Potential Loyalist' %}
-                            <span class="badge" style="background: linear-gradient(to right, #43e97b, #38f9d7); color: #000; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                🌟 {{ c.segment }}
-                            </span>
-                        {% elif c.segment == 'At Risk' %}
-                            <span class="badge" style="background: linear-gradient(to right, #ff512f, #dd2476); color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                ⚠️ {{ c.segment }}
-                            </span>
-                        {% elif c.segment == 'Lost' %}
-                            <span class="badge" style="background: linear-gradient(to right, #434343, #000000); color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                💀 {{ c.segment }}
-                            </span>
-                        {% else %}
-                            <span class="badge" style="background: linear-gradient(to right, #9d50bb, #6e48aa); color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
-                                🌀 {{ c.segment }}
-                            </span>
-                        {% endif %}
-                    </td>
-                    
-                    
-                    
+                        <span class="badge" style="background-color: #4CAF50; color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
+                            {{ c.segment }}
+                        </span>
+                    {% elif c.segment == 'Loyal' %}
+                        <span class="badge" style="background-color: #03A9F4; color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
+                            {{ c.segment }}
+                        </span>
+                    {% elif c.segment == 'New Customer' %}
+                        <span class="badge" style="background-color: #FFEB3B; color: #000; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
+                            {{ c.segment }}
+                        </span>
+                    {% elif c.segment == 'Regular' %}
+                        <span class="badge" style="background-color: #FF9800; color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
+                            {{ c.segment }}
+                        </span>
+                    {% elif c.segment == 'Lost' %}
+                        <span class="badge" style="background-color: #F44336; color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
+                            {{ c.segment }}
+                        </span>
+                    {% else %}
+                        <span class="badge" style="background-color: #9c27b0; color: white; font-weight: bold; padding: 0.5em 1em; border-radius: 20px;">
+                            {{ c.segment }}
+                        </span>
+                    {% endif %}
+                </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -148,10 +195,17 @@
     </div>
     <hr class="my-5">
     <h4 class="mb-3"><i class="bi bi-pie-chart-fill me-2"></i>Customer Segments Distribution</h4>
-    <div class="mx-auto" style="max-width: 500px;">
-        <canvas id="segmentChart"></canvas>
+    <div class="container my-5" style="max-width: 600px;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+        <h5 class="mb-0"> Segments Distribution</h5>
+        </div>
+        <div class="card-body bg-light">
+            
+        <canvas id="segmentChart" width="400" height="400"></canvas>
+        </div>
     </div>
-
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -166,32 +220,58 @@
         const segmentLabels = Object.keys(segmentData);
         const segmentCounts = Object.values(segmentData);
     
+        // Couleurs personnalisées par segment
+        const segmentColors = {
+            "Champions": "#4CAF50",       // Vert
+            "Lost": "#F44336",            // Rouge
+            "New Customer": "#FFEB3B",    // Jaune
+            "Loyal": "#03A9F4",           // Bleu clair
+            "Regular": "#FF9800"          // Orange
+        };
+    
+        const backgroundColors = segmentLabels.map(label => segmentColors[label] || "#cccccc");
+        const formattedLabels = segmentLabels.map((label, i) => `${label} (${segmentCounts[i]})`); // <-- Ici on ajoute le nombre dans l'étiquette
+      
+    
         new Chart(document.getElementById('segmentChart'), {
             type: 'pie',
             data: {
-                labels: segmentLabels,
+                labels: formattedLabels,// <-- On affiche "Champions (25)"
+
                 datasets: [{
-                    data: segmentCounts,
-                    backgroundColor: [
-                        '#4caf50',  // Champions - vert
-                        '#2196f3',  // Loyal - bleu
-                        '#ffc107',  // New Customer - jaune
-                        '#00bcd4',  // Potential - turquoise
-                        '#f44336',  // At Risk - rouge
-                        '#616161',  // Lost - gris foncé
-                        '#9c27b0'   // Regular - violet
-                    ]
+                    data: segmentCounts, 
+                    backgroundColor: backgroundColors
                 }]
             },
             options: {
+                responsive: true,
                 plugins: {
-                    legend: { position: 'bottom' },
+                    legend: {
+                        position: 'bottom'
+                    },
                     title: {
                         display: true,
                         text: 'Customer Segment Breakdown'
                     }
                 }
             }
+        });
+    </script>
+    
+    <script>
+        $(document).ready(function () {
+            const table = $('#segmentation-table').DataTable();
+    
+            $('#segmentFilter').on('change', function () {
+                const selected = $(this).val();
+    
+                if (selected === "All") {
+                    table.column(9).search('').draw(); // Affiche tous les segments
+                } else {
+                    // Filtrage par contenu texte, même s'il est dans un span
+                    table.column(9).search(selected, true, false).draw();
+                }
+            });
         });
     </script>
     

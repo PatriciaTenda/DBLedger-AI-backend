@@ -1,148 +1,137 @@
-# DBLedger-AI-backend
-DBLedger-AI est une application web qui optimise le prétraitement des factures via l’OCR, convertissant images et PDF en texte. Les données extraites sont traitées, stockées et exploitées par un système de reporting automatisé. Un seuil de qualité garantit la fiabilité des informations, assurant une gestion simplifiée et un suivi comptable optimisé.
+# DBLedger-AI – Backend
+DBLedger-AI est une solution intelligente de traitement de factures, conçue pour extraire automatiquement les informations à partir de fichiers images ou PDF à l’aide de l’OCR et des QR codes, stocker ces données de façon structurée dans une base de données, puis les exploiter à travers un système de reporting dynamique et des analyses client/produit.
 
-Generic single-database configuration.
+# Structure du projet
+```bash
+DBLedger-AI-BACKEND/
+├── app/
+│   ├── auth/                # Authentification utilisateur (hash, login, sécurité)
+│   ├── db/                  # Modèles de base de données et accès CRUD
+│   ├── ocr_services/        # Services d’OCR & traitement de facture
+├── data_images/             # Dossier de stockage des factures à traiter
+├── exports/                 # Fichiers exportés (CSV, résultats de reporting)
+├── logs/                    # Logs du système
+├── migrations/              # Scripts Alembic pour les migrations SQLAlchemy
+├── notebook/                # Notebooks EDA et Machine Learning
+├── static/                  # Fichiers statiques (CSS, JS, images)
+├── templates/               # Templates HTML pour l’interface web
+├── test/                    # Tests unitaires et fonctionnels
+├── venv/                    # Environnement virtuel
+├── extracted_invoice.json   # Exemple de résultat d’extraction OCR
+├── resultat_pretraite.png   # Résultat visuel de l’OCR/QR
+├── main.py                  # Fichier principal FastAPI (routes & logique)
+├── requirements.in          # Dépendances (version souple)
+├── requirements.txt         # Dépendances (version figée)
+├── .env                     # Variables d’environnement
+├── alembic.ini              # Config Alembic
+├── Dockerfile               # Conteneurisation
+├── docker-compose.yml       # Orchestration du backend
+└── README.md                # Documentation du projet
 
-## Installation
-
-## API Factures
-
-Récupération de la liste des factures (année 2018, format XML):  
-GET **CONTAINER_URL**/invoices-_2018_?restype=container&comp=list&**CONTAINER_SAS**
-### Schéma XML (API liste fichiers)
-```text
-─ EnumerationResults
-   └─Blobs
-      └─Blob (*)
-        ├─Name
-        └─Properties
 ```
-Récupération d'une facture (format PNG):  
-GET **CONTAINER_URL**/invoices-_2018_/_FAC_2018_0014-558.png_?**CONTAINER_SAS**
+# Fonctionnalités
+- OCR & QR code pour extraire automatiquement les données de factures
+
+- Classification automatique & segmentation client RFM
+
+- Stockage structuré dans PostgreSQL via SQLAlchemy
+
+- Dashboards interactifs (ventes, CA, clients)
+
+- Authentification utilisateur sécurisée
+
+- Notebooks d’analyse de données et d'entraînement de modèles ML
+
+- API REST + interface HTML via FastAPI + Jinja2
+
+# Installation
+1. Cloner le dépôt et créer l'environnement
+```bash
+
+git clone https://github.com/ton-compte/DBLedger-AI-backend.git
+cd DBLedger-AI-backend
+python -m venv venv
+source venv/bin/activate  # ou venv\Scripts\activate sous Windows
+```
+2. Installer les dépendances
 
 ```bash
- py -m venv venv
- venv/Scripts/activate
- pip install -r requirements.txt
+pip install -r requirements.txt
 ```
-
-### pip tools
-Génère le `requirements.txt` (clean, avec librairies & version) à partir du `requirements.in`
+3. Configuration base de données (SQLAlchemy + Alembic)
 ```bash
- pip install pip-tools
- pip-compile
+pip install sqlalchemy alembic psycopg2-binary
+alembic init migrations
 ```
-## Configuration base de données
-### Instalation SQLAlchimy
-
-```bash 
-    pip install SQLAlchymi
-```
-### Installation alembic
-
+# Traitement OCR & QR code
+## Installation des librairies nécessaires
 ```bash
-
-# Installer alembic
-    pip install alembic
-
-# Initialise Alembic
-    alembic init migrations
-
-# architecure du repertoire migrations/
-/alembic
-├── env.py          # Script de configuration d'Alembic
-├── versions/       # Contient les scripts de migration générés
-├── script.py.mako  # Template par défaut pour les migrations
-└── alembic.ini     # Fichier de configuration de base d'Alembic à la racine 
+pip install pytesseract opencv-python pyzbar
 ```
+En cas d'erreur libzbar-64.dll
+Télécharger le redistribuable Visual C++ :
+🔗 Lien Microsoft
 
-## Installation OCR et openCV
+# Authentification utilisateur
+Mécanisme basé sur bcrypt, passlib, et itsdangerous :
 
 ```bash
-    pip install pytesseract
-    pip install opencv-python
+pip install bcrypt passlib[bcrypt] python-multipart itsdangerous
 ```
 
-## Installation de pyzbar pour décoder le QRcode 
+## Fonctionnalités :
 
+- Hachage des mots de passe
+
+- Formulaire de connexion
+
+- Redirection dynamique
+
+- Feedback utilisateur
+
+# Reporting & Visualisation
+## Tableaux HTML interactifs avec Bootstrap
+
+- Tri, recherche, export CSV
+
+- Graphique RFM (matplotlib)
+
+- Chiffre d’affaires par an, top produits
+
+- Monitoring visuel
+
+# Notebooks d’analyse
+Dans le dossier notebook, tu trouveras :
+
+- Analyse exploratoire (clients & produits)
+
+- Préparation des données pour la segmentation RFM
+
+# Tests d'algorithmes ML simples
 ```bash
-    pip install pyzbar
-
 ```
 
-### Pour resoudre le l'erreur  libzbar-64.dll not found
- Il faut téléchargé le fichier vc_redist.x64.exe
- le lien officiel de Microsoft :
-🔗 https://learn.microsoft.com/fr-fr/cpp/windows/latest-supported-vc-redist
-
-
-
-## Installation de la librairie python-multipart
+# Installation des librairies pour notebook
 ```bash
-    pip install python-multipart
+pip install ipykernel pandas matplotlib scikit-learn sqlalchemy
+python -m ipykernel install --user --name=dbledger-kernel --display-name "Python (DBLedger-AI)"
 ```
-
-
-## Mise en place du système d'authentification des utilisateurs
-
-### Authentification & Sécurité
-Le système d'authentification de DBLedger-AI repose sur un mécanisme simple et sécurisé utilisant :
-
-🔑 Formulaire de connexion (email + mot de passe)
-
-🔒 Hachage des mots de passe avec bcrypt
-
-🔁 Vérification du mot de passe lors de la connexion
-
-🔄 Redirection en cas d’échec ou de succès
-
-✅ Gestion des erreurs utilisateur avec feedback visuel (Toast Bootstrap)
-
-#### Fonctionnement
-Création d’un utilisateur (à faire via Alembic ou script Python)
-
-Les mots de passe sont hachés avant d’être stockés en base.
-
-Utilisation de la fonction hash_password(password).
-
-##### Connexion
-
-Le formulaire /login envoie les données à la route /auth/jwt/login.
-
-Vérification de l’email et du mot de passe via la fonction verify_password(...).
-
-En cas de succès : redirection vers /upload_invoice.
-
-En cas d’échec : redirection vers /login?error=invalid avec affichage d’un message d'erreur via un toast.
-
-##### Sécurité
-
-Aucune information sensible n’est stockée en clair.
-
-Le système est conçu pour une authentification simple avant extension future vers OAuth2 / JWT.
-
- Compte test (exemple)
-
+# Dockerisation 
+Lancement avec Docker Compose
 ```bash
-    Email : admin@example.com
-    Mot de passe : secret
+docker-compose up --build
 ```
-Ce compte est utilisé à des fins de démonstration (dans la version de développement).
+# À venir
 
-#### Ajouter un utilitaire de hash de mot de passe
-##### Installation de bcrypt
-bcrypt : un algorithme sécurisé recommandé pour le stockage de mots de passe.
-```bash
-    pip install bcrypt
-```
+- Ajout de filtres intelligents par segment client
 
-##### Installation passlib
-passlib : pour le hashage et la vérification des mots de passe.
-```bash
-   pip install passlib[bcrypt]
-```
-#### Installion module itsdangerous
-La session dans Starlette/FastAPI utilise itsdangerous pour signer les données de session.
-```bash
-    pip install itsdangerous
-```
+- Dashboard client avec alertes personnalisées
+
+- Intégration IA pour génération de quiz à partir de cours PDF/vidéo
+
+- Déploiement sur plateforme cloud (Render, Railway ou autre)
+
+
+# Contributeurs
+Projet réalisé dans le cadre d’une formation IA par Patricia TENDA
+Créé pour explorer la mise en œuvre concrète d’un backend OCR intelligent avec dashboards dynamiques et sécurité intégrée.

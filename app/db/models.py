@@ -37,6 +37,7 @@ class t_customer(Base):
     date_of_birth_customer = Column(Date, nullable=False)
     sexe_customer = Column(String, nullable=False)
     address_customer = Column(String)
+    segment = Column(String, nullable=True)
 
     invoice = relationship("t_invoice", back_populates="customer")
 
