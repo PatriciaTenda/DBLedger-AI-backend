@@ -1,7 +1,7 @@
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Date, DateTime, DECIMAL, CheckConstraint, func
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Date, DateTime, DECIMAL
 from sqlalchemy.orm import declarative_base, relationship
 from app.db.connect_to_db import Base
 
