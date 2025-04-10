@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            text-align: center;
+        }
+        th:first-child, td:first-child,
+        td:nth-child(2), th:nth-child(2) {
+            text-align: left;
+        }
+        tfoot {
+            font-weight: bold;
+            background: #e6e6e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar start -->
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/Logo_dbledger_ai.png" alt="DBLedger Logo" class="rounded-circle me-2" width="60">
+                <span class="fs-4">DBLedger-AI</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Left nav -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light me-2" href="/upload_invoice">Upload Invoice</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light me-2" href="/invoice">Invoice Viewer</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="btn btn-outline-light dropdown-toggle me-2" href="#" role="button" data-bs-toggle="dropdown">
+                            Dashboards
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/customer-segmentation">Customer Segmentation</a></li>
+                            <li><a class="dropdown-item" href="#">Product Segmentation</a></li>
+                            <li><a class="dropdown-item" href="/product-report">Global Product Reporting</a></li>
+                            <li><a class="dropdown-item" href="/customer-report">Global Customer Reporting</a></li>
+                            <li><a class="dropdown-item" href="#">Monitoring</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Right nav -->
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if request.session.user %}
+                        <li class="nav-item text-white me-3">👋 Welcome, {{ request.session.user }}</li>
+                        <li class="nav-item"><a href="/logout" class="btn btn-outline-light me-2">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a href="/login" class="btn btn-outline-light me-2">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar end -->
+
+    <div class="container">
+        <h1 class="mb-4">Global Customer Report</h1>
+
+        <div class="mb-4">
+            <h5>Total Customers: {{ total_clients }}</h5>
+            <h5>Total Revenue: {{ '{:,.2f}'.format(total_revenue_all_clients or 0) }} €</h5>
+        </div>
+
+        <a class="btn btn-primary mb-3" href="/export-customer-report" download>⬇️ Export to CSV</a>
+
+        <table id="customer-table" class="display table table-striped table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Invoice Count</th>
+                    <th>Total Purchases (€)</th>
+                    <th>Average Basket (€)</th>
+                    <th>Last Invoice</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in report %}
+                <tr>
+                    <td>{{ client.name_customer }}</td>
+                    <td>{{ client.email_customer }}</td>
+                    <td>{{ client.total_invoices }}</td>
+                    <td>{{ '{:,.2f}'.format(client.total_amount or 0) }}</td>
+                    <td>{{ '{:,.2f}'.format(client.avg_amount or 0) }}</td>
+                    <td>{{ client.last_invoice_date.strftime('%d/%m/%Y') if client.last_invoice_date else 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container my-5" style="max-width: 1500px;">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="bi bi-bar-chart-fill me-2 fs-4"></i>
+                <h4 class="mb-0">Top Customer Analysis</h4>
+            </div>
+            <div class="card-body bg-light">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-primary">Top 5 by Revenue</h6>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h6 class="text-success">Top 5 by Invoice Count</h6>
+                        <canvas id="invoiceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#customer-table').DataTable();
+        });
+    </script>
+    
+    <script>
+        const data = JSON.parse(`{{ chart_data | safe }}`);
+    
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Revenue (€)',
+                    data: data.revenues,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                }]
+            }
+        });
+    
+        new Chart(document.getElementById('invoiceChart'), {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: 'Invoice Count',
+                    data: data.invoices,
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)'
+                }]
+            }
+        });
+    </script>
+
+</body>
+</html>

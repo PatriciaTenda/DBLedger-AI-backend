@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Sales Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            text-align: center;
+        }
+        th:first-child, td:first-child,
+        td:nth-child(2), th:nth-child(2) {
+            text-align: left;
+        }
+        tfoot {
+            font-weight: bold;
+            background: #e6e6e6;
+        }
+        .product-block {
+            border: 1px solid #ddd;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+            background: #fff;
+        }
+        .product-block h3 {
+            cursor: pointer;
+            color: #007bff;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar start -->
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/Logo_dbledger_ai.png" alt="DBLedger Logo" class="rounded-circle me-2" width="60">
+                <span class="fs-4">DBLedger-AI</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Left nav -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light me-2" href="/upload_invoice">Upload Invoice</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light me-2" href="/invoice">Invoice Viewer</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="btn btn-outline-light dropdown-toggle me-2" href="#" role="button" data-bs-toggle="dropdown">
+                            Dashboards
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/customer-segmentation">Customer Segmentation</a></li>
+                            <li><a class="dropdown-item" href="#">Product Segmentation</a></li>
+                            <li><a class="dropdown-item" href="/product-report">Global Product Reporting</a></li>
+                            <li><a class="dropdown-item" href="/customer-report">Global Customer Reporting</a></li>
+                            <li><a class="dropdown-item" href="#">Monitoring</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Right nav -->
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if request.session.user %}
+                        <li class="nav-item text-white me-3">👋 Welcome, {{ request.session.user }}</li>
+                        <li class="nav-item"><a href="/logout" class="btn btn-outline-light me-2">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a href="/login" class="btn btn-outline-light me-2">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar end -->
+<div class="container">
+    <h1>📦Product Sales Global Report</h1>
+    <a class="btn btn-primary mb-3" href="/export-product-report" download>⬇️ Export to CSV</a>
+
+    <table id="product-table" class="display table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Product</th>
+                <th>Total Quantity Sold</th>
+                <th>Total Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td>{{ p.name_product }}</td>
+                <td>{{ p.total_quantity }}</td>
+                <td>{{ "{:,.2f} €".format(p.total_revenue) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="table-light">
+            <tr>
+                <th>Total</th>
+                <th>{{ total_quantity }}</th>
+                <th>{{ "{:,.2f} €".format(total_revenue) }}</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <h2>Turnover per year</h2>
+    <div class="mx-auto mb-4" style="max-width: 600px;">
+        <canvas id="revenueByYearChart"></canvas>
+    </div>
+
+    <h2>Top products sold</h2>
+    <div class="mx-auto mb-4" style="max-width: 600px;">
+        <canvas id="topProductsChart"></canvas>
+    </div>
+
+    <hr>
+    <h2>Details of sales by product (associated invoices)</h2>
+    <div class="container">
+        <span class="fw-bold">Global products found : {{ product_reports | length }} </span>
+    </div>
+    <div class="container">
+        <span class="fw-bold">Click on a product name to view its invoices 👇</span>
+    </div>
+    <input type="text" id="searchInput" class="form-control mb-3" placeholder="🔍 Search a product...">
+
+    <div id="product-container">
+        {% for report in product_reports %}
+        <div class="product-block" data-index="{{ loop.index0 }}">
+            <h3 onclick="toggleFactures('{{ loop.index0 }}', this)">
+                <span class="arrow">▶️</span> {{ report.product.name_product }}
+            </h3>
+            <div id="factures-{{ loop.index0 }}" style="display: none;">
+                <table class="facture-table table table-hover mt-2">
+                    <thead class="table-secondary">
+                        <tr><th>Invoice</th><th>Date</th><th>Quantity</th><th>Revenue (€)</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in report.sales %}
+                        <tr>
+                            <td>{{ sale.id_invoice }}</td>
+                            <td>{{ sale.issue_date }}</td>
+                            <td>{{ sale.quantities }}</td>
+                            <td>{{ "{:,.2f}".format(sale.subtotals) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="pagination-controls" class="mt-4 text-center"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#product-table').DataTable();
+    });
+
+    const revenueByYear = JSON.parse(`{{ revenue_by_year | tojson | safe }}`);
+    const topProducts = JSON.parse(`{{ top_products | tojson | safe }}`);
+
+    new Chart(document.getElementById('revenueByYearChart'), {
+        type: 'bar',
+        data: {
+            labels: revenueByYear.map(r => r.year),
+            datasets: [{
+                label: "Revenue (€)",
+                data: revenueByYear.map(r => r.revenue),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('topProductsChart'), {
+    type: 'pie',
+    data: {
+        labels: topProducts.map(p => p.name),
+        datasets: [{
+            label: 'Revenue',
+            data: topProducts.map(p => p.revenue),
+            backgroundColor: [
+                '#36A2EB', '#FF6384', '#FF9F40', '#FFCD56', '#4BC0C0'
+            ]
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Top 5 Products Sold'
+            },
+            datalabels: {
+                color: '#000',
+                formatter: (value, context) => {
+                    const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    const percentage = (value / total * 100).toFixed(1);
+                    return percentage + '%';
+                }
+            }
+        }
+    },
+    plugins: [ChartDataLabels]
+    });
+
+    function toggleFactures(index, el) {
+        const container = document.getElementById("factures-" + index);
+        const arrow = el.querySelector(".arrow");
+        container.style.display = container.style.display === "none" ? "block" : "none";
+        arrow.textContent = container.style.display === "block" ? "🔽" : "▶️";
+    }
+
+    function filterProducts() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+        const blocks = document.querySelectorAll(".product-block");
+        blocks.forEach(block => {
+            const title = block.querySelector("h3").textContent.toLowerCase();
+            block.style.display = title.includes(input) ? "block" : "none";
+            
+        });
+        
+    }
+
+     // Attache l'événement au chargement
+    document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("searchInput").addEventListener("keyup", filterProducts);
+    });
+
+    const itemsPerPage = 10;
+    let currentPage = 1;
+
+    function showPage(page) {
+        const blocks = document.querySelectorAll('.product-block');
+        const totalPages = Math.ceil(blocks.length / itemsPerPage);
+        currentPage = Math.max(1, Math.min(page, totalPages));
+        blocks.forEach((block, index) => {
+            block.style.display = (index >= (currentPage - 1) * itemsPerPage && index < currentPage * itemsPerPage) ? "block" : "none";
+        });
+        renderPaginationControls(totalPages);
+    }
+
+    function renderPaginationControls(totalPages) {
+        const container = document.getElementById('pagination-controls');
+        container.innerHTML = "";
+        if (totalPages <= 1) return;
+
+        const prev = `<button class="btn btn-outline-primary btn-sm me-1" onclick="showPage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>⏮ Prev</button>`;
+        const next = `<button class="btn btn-outline-primary btn-sm ms-1" onclick="showPage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>Next ⏭</button>`;
+
+        let pages = '';
+        for (let i = 1; i <= totalPages; i++) {
+            pages += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'} mx-1" onclick="showPage(${i})">${i}</button>`;
+        }
+
+        container.innerHTML = `${prev} ${pages} ${next}`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        $('.facture-table').DataTable({
+            paging: true,
+            searching: false,
+            lengthChange: false,
+            pageLength: 5
+        });
+        showPage(1);
+    });
+</script>
+</body>
+</html>

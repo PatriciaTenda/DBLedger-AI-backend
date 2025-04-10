@@ -169,3 +169,20 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# data 
+data_images/
+Data/
+
+# Repertoires de versions des migrations alembic
+migrations/versions/
+
+# Repertoires des logs de l'application
+logs/
+logs/*
+.log
+
+# Repertoires des fichiers csv de l'application
+.exports
+exports/*
+exports/   
