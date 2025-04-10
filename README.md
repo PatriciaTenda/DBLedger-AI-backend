@@ -127,8 +127,8 @@ docker-compose up --build
 
 - Dashboard client avec alertes personnalisées
 
-- Intégration IA pour génération de quiz à partir de cours PDF/vidéo
-
+- Docker
+  
 - Déploiement sur plateforme cloud (Render, Railway ou autre)
 
 
